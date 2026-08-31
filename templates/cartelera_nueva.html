@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block titulo %}Nueva tarea{% endblock %}
+{% block contenido %}
+<p><a href="{{ url_for('cartelera') }}">&larr; Volver a la cartelera</a></p>
+<h1>📋 Nueva tarea</h1>
+
+<form method="post" class="form-empleado">
+  <label>Nombre <input type="text" name="nombre" required></label>
+  <label>Responsable
+    <select name="responsable_id">
+      <option value="">(sin asignar)</option>
+      {% for u in usuarios %}
+      <option value="{{ u.id }}">{{ u.nombre }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Fecha de inicio <input type="date" name="fecha_inicio" required></label>
+  <label>Fecha de fin (opcional) <input type="date" name="fecha_fin"></label>
+  <button type="submit" class="btn-principal">Crear tarea</button>
+</form>
+{% endblock %}

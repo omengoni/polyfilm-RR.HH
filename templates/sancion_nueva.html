@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block titulo %}Cargar sanción{% endblock %}
+{% block contenido %}
+<p><a href="{{ url_for('sanciones') }}">&larr; Volver a sanciones</a></p>
+<h1>⚠️ Cargar sanción</h1>
+
+<form method="post" class="form-empleado">
+  <label>Empleado
+    <input type="text" list="lista-empleados" id="buscar-empleado" placeholder="Escribí para buscar por nombre..." autocomplete="off" required>
+    <input type="hidden" name="empleado_id" id="empleado_id">
+    <datalist id="lista-empleados">
+      {% for e in empleados %}
+      <option data-id="{{ e.id }}" value="{{ e.nombre }} (legajo {{ e.legajo }})"></option>
+      {% endfor %}
+    </datalist>
+  </label>
+  <label>Tipo
+    <select name="tipo_id" required>
+      <option value="">(elegir)</option>
+      {% for t in tipos %}
+      <option value="{{ t.id }}">{{ t.nombre }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Motivo
+    <select name="motivo_id">
+      <option value="">(sin especificar)</option>
+      {% for m in motivos %}
+      <option value="{{ m.id }}">{{ m.nombre }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Días de suspensión (solo si aplica) <input type="text" name="dias_suspension" placeholder="ej: 48 hs."></label>
+  <label>Desde la fecha (solo si aplica) <input type="date" name="fecha_desde"></label>
+  <button type="submit" class="btn-principal">Guardar</button>
+</form>
+
+<script>
+  const buscador = document.getElementById('buscar-empleado');
+  const oculto = document.getElementById('empleado_id');
+  const opciones = document.querySelectorAll('#lista-empleados option');
+  buscador.addEventListener('input', () => {
+    oculto.value = '';
+    for (const op of opciones) {
+      if (op.value === buscador.value) {
+        oculto.value = op.dataset.id;
+        break;
+      }
+    }
+  });
+</script>
+{% endblock %}

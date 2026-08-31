@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block titulo %}Cargar capacitación{% endblock %}
+{% block contenido %}
+<p><a href="{{ url_for('capacitaciones') }}">&larr; Volver a capacitaciones</a></p>
+<h1>🎓 Cargar capacitación</h1>
+
+<form method="post" class="form-empleado">
+  <label>Tema
+    <select name="tema_id" required>
+      <option value="">(elegir)</option>
+      {% for t in temas %}
+      <option value="{{ t.id }}" {% if tema_id_preseleccionado == t.id %}selected{% endif %}>{{ t.nombre }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Fecha <input type="date" name="fecha" required></label>
+
+  <fieldset class="modo-carga">
+    <legend>¿A quién se la carga?</legend>
+    <label class="check-inline"><input type="radio" name="modo" value="empleado" checked onchange="toggleModo()"> Un empleado puntual</label>
+    <label class="check-inline"><input type="radio" name="modo" value="departamento" onchange="toggleModo()"> Todo un departamento</label>
+  </fieldset>
+
+  <div id="bloque-empleado">
+    <label>Empleado
+      <input type="text" list="lista-empleados" id="buscar-empleado" placeholder="Escribí para buscar por nombre..." autocomplete="off">
+      <input type="hidden" name="empleado_id" id="empleado_id">
+      <datalist id="lista-empleados">
+        {% for e in empleados %}
+        <option data-id="{{ e.id }}" value="{{ e.nombre }} (legajo {{ e.legajo }})"></option>
+        {% endfor %}
+      </datalist>
+    </label>
+    <label>Puntaje (si aplica) <input type="number" step="0.01" name="puntuacion"></label>
+  </div>
+
+  <div id="bloque-departamento" style="display:none;">
+    <label>Departamento
+      <select name="departamento_id">
+        <option value="">(elegir)</option>
+        {% for d in departamentos %}
+        <option value="{{ d.id }}">{{ d.nombre }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <p class="nota">Se va a cargar un registro para cada empleado activo de ese departamento.</p>
+  </div>
+
+  <label>Observaciones <input type="text" name="observaciones"></label>
+  <button type="submit" class="btn-principal">Guardar</button>
+</form>
+
+<script>
+  function toggleModo() {
+    const esDepto = document.querySelector('input[name="modo"]:checked').value === 'departamento';
+    document.getElementById('bloque-empleado').style.display = esDepto ? 'none' : 'block';
+    document.getElementById('bloque-departamento').style.display = esDepto ? 'block' : 'none';
+  }
+
+  const buscador = document.getElementById('buscar-empleado');
+  const oculto = document.getElementById('empleado_id');
+  const opciones = document.querySelectorAll('#lista-empleados option');
+  buscador.addEventListener('input', () => {
+    oculto.value = '';
+    for (const op of opciones) {
+      if (op.value === buscador.value) {
+        oculto.value = op.dataset.id;
+        break;
+      }
+    }
+  });
+</script>
+{% endblock %}

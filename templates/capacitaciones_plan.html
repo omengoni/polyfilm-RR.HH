@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block titulo %}Plan de Capacitaciones{% endblock %}
+{% block contenido %}
+<h1>🎓 Capacitaciones</h1>
+
+<div class="acciones-empleados">
+  <a class="btn-tab btn-tab-activo" href="{{ url_for('capacitaciones_plan_anual') }}">📋 Plan</a>
+  <a class="btn-tab" href="{{ url_for('capacitaciones') }}">🎓 Capacitaciones</a>
+</div>
+
+<form method="get" class="filtros">
+  <select name="anio" onchange="this.form.submit()">
+    {% for a in anios_disponibles %}
+    <option value="{{ a }}" {% if anio_plan == a %}selected{% endif %}>{{ a }}</option>
+    {% endfor %}
+  </select>
+</form>
+
+<div class="kpi-avance">
+  <span class="kpi-numero">{{ avance_plan_pct }}%</span>
+  <span class="nota">de las {{ plan_anual|length }} capacitaciones planificadas para {{ anio_plan }} ya tuvieron al menos una sesión dictada este año.</span>
+</div>
+
+{% if plan_anual %}
+<table>
+  <thead><tr><th>Tema madre</th><th>Capacitación</th><th>Estado {{ anio_plan }}</th></tr></thead>
+  <tbody>
+    {% for p in plan_anual %}
+    <tr class="fila-click" onclick="window.location='{{ url_for('capacitacion_tema_detalle', tid=p.id) }}'">
+      <td>{{ p.tema_madre or '-' }}</td>
+      <td><a href="{{ url_for('capacitacion_tema_detalle', tid=p.id) }}">{{ p.nombre }}</a></td>
+      <td>
+        {% if p.realizados > 0 %}
+        <span class="badge estado-efectivo">✅ Dictada ({{ p.realizados }})</span>
+        {% else %}
+        <span class="badge estado-preocupacional">⏳ Pendiente</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="nota">Todavía no hay plan cargado para {{ anio_plan }}.</p>
+{% endif %}
+{% endblock %}

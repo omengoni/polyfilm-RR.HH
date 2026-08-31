@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block titulo %}Historial {{ dia }}{% endblock %}
+{% block contenido %}
+<p><a href="{{ url_for('procesar') }}">&larr; Volver a Procesamiento de CVs</a></p>
+<h1>Historial del {{ dia }}</h1>
+
+<table>
+  <thead>
+    <tr><th>Fecha</th><th>Archivo</th><th>Resultado</th><th>Detalle</th></tr>
+  </thead>
+  <tbody>
+    {% for log in logs %}
+    <tr class="resultado-{{ log.resultado }}">
+      <td>{{ log.fecha }}</td>
+      <td>{{ log.cv_filename }}</td>
+      <td>{{ log.resultado }}</td>
+      <td>{{ log.detalle }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4">Sin registros para esta fecha.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

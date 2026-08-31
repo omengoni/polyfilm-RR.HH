@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block titulo %}Procesamiento de CVs{% endblock %}
+{% block contenido %}
+<h1>Procesamiento de CVs</h1>
+<p>Carpeta escaneada: <code>{{ cvs_dir }}</code> — {{ cant_archivos }} archivo(s) esperando.</p>
+
+{% if imap_ok %}
+<p class="nota">La bajada de CVs del mail corre sola 2 veces por día. Este botón la fuerza ahora mismo si no querés esperar.</p>
+<form method="post" action="{{ url_for('descargar_mail_ejecutar') }}">
+  <button type="submit">📥 Bajar CVs del mail ahora</button>
+</form>
+{% else %}
+<p class="nota">Falta configurar el acceso IMAP a la casilla de Reclutamiento (rrhh.cfg) para bajar los CVs del mail automáticamente.</p>
+{% endif %}
+
+<form method="post" action="{{ url_for('procesar_ejecutar') }}">
+  <button type="submit" class="btn-principal">Procesar CVs nuevos</button>
+</form>
+
+<h2>Historial de procesamiento</h2>
+<form id="form-historial" method="post" action="{{ url_for('procesar_historial_eliminar') }}">
+<table>
+  <thead>
+    <tr>
+      <th><input type="checkbox" id="check-todos" onclick="event.stopPropagation(); marcarTodos(this.checked);"></th>
+      <th>Fecha</th><th>Nuevos</th><th>Actualizados</th><th>Duplicados</th><th>Errores</th><th>Total</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in resumen_historial %}
+    <tr onclick="window.location='{{ url_for('procesar_historial_dia', dia=r.dia) }}'" class="fila-click">
+      <td onclick="event.stopPropagation();"><input type="checkbox" name="dia" value="{{ r.dia }}" class="check-fila"></td>
+      <td>{{ r.dia }}</td>
+      <td>{{ r.nuevos }}</td>
+      <td>{{ r.actualizados }}</td>
+      <td>{{ r.duplicados }}</td>
+      <td>{{ r.errores }}</td>
+      <td><strong>{{ r.total }}</strong></td>
+    </tr>
+    {% else %}
+    <tr><td colspan="7">Todavía no se procesó nada.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+<div class="acciones-empleados" style="margin-top:12px;">
+  <button type="button" onclick="confirmarAccion(this, '¿Eliminar el historial de las fechas tildadas? No se puede deshacer.')">🗑️ Eliminar seleccionadas</button>
+</div>
+</form>
+
+<h2>Archivos que no se pudieron leer</h2>
+<p class="nota">Quedaron en el servidor, no se perdieron — se pueden abrir acá para revisarlos a mano (por ejemplo, si un candidato mandó una foto o un escaneo en vez de un PDF con texto).</p>
+{% if archivos_con_error %}
+<form id="form-errores" method="post" action="{{ url_for('procesar_errores_eliminar') }}">
+<table>
+  <thead>
+    <tr>
+      <th><input type="checkbox" id="check-todos-errores" onclick="event.stopPropagation(); marcarTodosErrores(this.checked);"></th>
+      <th>Archivo</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for nombre in archivos_con_error %}
+    <tr>
+      <td><input type="checkbox" name="nombre" value="{{ nombre }}" class="check-fila-error"></td>
+      <td><a href="{{ url_for('procesar_error_ver', nombre=nombre) }}" target="_blank">{{ nombre }}</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<div class="acciones-empleados" style="margin-top:12px;">
+  <button type="button" onclick="confirmarAccion(this, '¿Eliminar los archivos tildados? No se pueden recuperar.')">🗑️ Eliminar seleccionados</button>
+</div>
+</form>
+{% else %}
+<p class="nota">No hay archivos con error pendientes de revisar.</p>
+{% endif %}
+
+<script>
+function marcarTodos(valor) {
+  document.querySelectorAll('.check-fila').forEach(c => c.checked = valor);
+}
+function marcarTodosErrores(valor) {
+  document.querySelectorAll('.check-fila-error').forEach(c => c.checked = valor);
+}
+</script>
+{% endblock %}

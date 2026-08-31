@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block titulo %}Capacitaciones{% endblock %}
+{% block contenido %}
+<h1>🎓 Capacitaciones</h1>
+
+<div class="acciones-empleados">
+  <a class="btn-tab" href="{{ url_for('capacitaciones_plan_anual') }}">📋 Plan</a>
+  <a class="btn-tab btn-tab-activo" href="{{ url_for('capacitaciones') }}">🎓 Capacitaciones</a>
+  <a class="btn-principal" href="{{ url_for('capacitacion_nueva') }}">+ Cargar capacitación</a>
+</div>
+
+<h2>Por tema</h2>
+<form method="get" class="filtros">
+  <select name="tema_madre" onchange="this.form.submit()">
+    <option value="">Todos los temas madre</option>
+    {% for tm in temas_madre %}
+    <option value="{{ tm }}" {% if tema_madre_filtro == tm %}selected{% endif %}>{{ tm }}</option>
+    {% endfor %}
+  </select>
+</form>
+<div class="dashboard-capacitaciones">
+  {% for f in dashboard %}
+  <div class="fila-dashboard">
+    <span class="label-depto"><a href="{{ url_for('capacitacion_tema_detalle', tid=f.id) }}">{{ f.nombre }}</a>{% if f.tema_madre %} <span class="nota">({{ f.tema_madre }})</span>{% endif %}</span>
+    <div class="barra-fondo-cumplimiento">
+      <div class="barra-mascara" style="width: {{ 100 - f.pct }}%;"></div>
+    </div>
+    <span class="total-depto">{{ f.pct }}% — {{ f.total_registros }} registros ({{ f.total_personas }} personas)</span>
+  </div>
+  {% else %}
+  <p>No hay temas de capacitación cargados todavía.</p>
+  {% endfor %}
+</div>
+
+<p><a href="{{ url_for('capacitaciones_detalle') }}">Ver detalle de asistencias y catálogo de temas &rarr;</a></p>
+{% endblock %}

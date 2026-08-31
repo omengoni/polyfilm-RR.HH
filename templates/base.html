@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>RR.HH. Polyfilm - {% block titulo %}{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header>
+  <a href="{{ url_for('index') }}" class="logo">RR.HH. Polyfilm</a>
+  <nav>
+    {% for m in modulos %}
+    <a href="{{ m.href }}" class="{{ 'activo' if modulo_actual == m.cod else '' }}">{{ m.icono }} {{ m.nombre }}</a>
+    {% endfor %}
+  </nav>
+  {% if usuario %}
+  <div class="header-usuario">
+    <span>{{ usuario.nombre }}</span>
+    <a href="{{ url_for('cambiar_password') }}">Mi contraseña</a>
+    <a href="{{ url_for('logout') }}">Salir</a>
+  </div>
+  {% endif %}
+</header>
+
+{% if modulo_actual %}
+{% set modulo = modulos | selectattr('cod', 'equalto', modulo_actual) | first %}
+{% if modulo.opciones %}
+<div class="submenu">
+  {% for op in modulo.opciones %}
+  <a href="{{ op.href }}">{{ op.icono }} {{ op.label }}</a>
+  {% endfor %}
+</div>
+{% endif %}
+{% endif %}
+
+<main>
+  {% with mensajes = get_flashed_messages(with_categories=true) %}
+    {% if mensajes %}
+      <div class="flashes">
+        {% for categoria, msg in mensajes %}
+          <div class="flash flash-{{ categoria }}">{{ msg }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {% block contenido %}{% endblock %}
+</main>
+
+<div id="modal-confirmar" class="modal-overlay oculto">
+  <div class="modal-caja">
+    <p id="modal-confirmar-mensaje"></p>
+    <div class="modal-botones">
+      <button type="button" onclick="modalCancelar()">Cancelar</button>
+      <button type="button" class="btn-peligro" onclick="modalConfirmar()">Confirmar</button>
+    </div>
+  </div>
+</div>
+<script>
+  let _formPendiente = null;
+  function confirmarAccion(boton, mensaje) {
+    _formPendiente = boton.closest('form');
+    document.getElementById('modal-confirmar-mensaje').textContent = mensaje;
+    document.getElementById('modal-confirmar').classList.remove('oculto');
+  }
+  function modalCancelar() {
+    _formPendiente = null;
+    document.getElementById('modal-confirmar').classList.add('oculto');
+  }
+  function modalConfirmar() {
+    document.getElementById('modal-confirmar').classList.add('oculto');
+    if (_formPendiente) _formPendiente.submit();
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block titulo %}Departamentos{% endblock %}
+{% block contenido %}
+<h1>🏭 Departamentos</h1>
+<p class="nota">Catálogo de departamentos/áreas, cargado desde la nómina. Editable acá — útil para unificar nombres duplicados o dar de baja los que no se usan.</p>
+
+<table>
+  <thead>
+    <tr><th>Departamento</th><th>Activo</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for d in departamentos %}
+    <tr>
+      <form method="post" action="{{ url_for('departamentos_editar', did=d.id) }}">
+        <td><input type="text" name="nombre" value="{{ d.nombre }}" required></td>
+        <td><input type="checkbox" name="activo" {% if d.activo %}checked{% endif %}></td>
+        <td><button type="submit">Guardar</button></td>
+      </form>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

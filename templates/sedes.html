@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block titulo %}Sedes{% endblock %}
+{% block contenido %}
+<h1>📍 Sedes</h1>
+<p class="nota">Catálogo de sedes/plantas. Por ahora se cargan a mano acá abajo — cuando llegue el Excel de sedes se puede sumar un importador igual al de Empleados.</p>
+
+<table>
+  <thead>
+    <tr><th>Sede</th><th>Activa</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for s in sedes %}
+    <tr>
+      <form method="post" action="{{ url_for('sedes_editar', sid=s.id) }}">
+        <td><input type="text" name="nombre" value="{{ s.nombre }}" required></td>
+        <td><input type="checkbox" name="activo" {% if s.activo %}checked{% endif %}></td>
+        <td><button type="submit">Guardar</button></td>
+      </form>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h2>Agregar sede</h2>
+<form method="post" action="{{ url_for('sedes_nueva') }}" class="form-nuevo-rol">
+  <input type="text" name="nombre" placeholder="Nombre de la sede" required>
+  <button type="submit">Crear</button>
+</form>
+{% endblock %}

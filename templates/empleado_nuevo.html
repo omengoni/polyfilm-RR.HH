@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block titulo %}Nuevo empleado{% endblock %}
+{% block contenido %}
+<h1>🪪 Nuevo empleado</h1>
+{% if candidato %}
+<p class="nota">Dando de alta desde el candidato <strong>{{ candidato.nombre }}</strong> (Reclutamiento) — revisá los datos precargados y completá lo que falte.</p>
+{% endif %}
+
+<form method="post" class="form-empleado">
+  {% if candidato %}<input type="hidden" name="candidato_id" value="{{ candidato.id }}">{% endif %}
+  <label>Nombre <input type="text" name="nombre" value="{{ candidato.nombre if candidato else '' }}" required></label>
+  <label>Legajo <input type="number" name="legajo" required></label>
+  <label>DNI <input type="text" name="dni"></label>
+  <label>CUIL <input type="text" name="cuil"></label>
+  <label>Turno <input type="text" name="turno"></label>
+  <label>Fecha de ingreso <input type="date" name="fecha_ingreso"></label>
+  <label>Compañía
+    <select name="compania_id">
+      <option value="">(sin definir)</option>
+      {% for c in companias %}
+      <option value="{{ c.id }}">{{ c.nombre }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Departamento
+    <select name="departamento_id">
+      <option value="">(sin definir)</option>
+      {% for d in departamentos %}
+      <option value="{{ d.id }}">{{ d.nombre }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Puesto
+    <select name="puesto_id">
+      <option value="">(sin definir)</option>
+      {% for p in puestos %}
+      <option value="{{ p.id }}">{{ p.nombre }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Sede
+    <select name="sede_id">
+      <option value="">(sin definir)</option>
+      {% for s in sedes %}
+      <option value="{{ s.id }}">{{ s.nombre }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Tipo de contrato
+    <select name="tipo_contrato">
+      <option value="">(sin definir)</option>
+      <option value="Mensualizado">Mensualizado</option>
+      <option value="Jornalizado">Jornalizado</option>
+    </select>
+  </label>
+  <button type="submit" class="btn-principal">Confirmar alta</button>
+</form>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block titulo %}{{ c.nombre or 'Candidato' }}{% endblock %}
+{% block contenido %}
+<p><a href="{{ url_for('candidatos') }}">&larr; Volver a candidatos</a></p>
+<h1>{{ c.nombre or '(sin nombre)' }}</h1>
+
+<div class="ficha">
+  <p><strong>Email:</strong> {{ c.email or '-' }}</p>
+  <p><strong>Teléfono:</strong> {{ c.telefono or '-' }}</p>
+  <p><strong>Localidad:</strong> {{ c.localidad or '-' }}</p>
+  <p><strong>Score:</strong> {{ c.score if c.score is not none else '-' }} / 100</p>
+  <p><strong>Justificación:</strong> {{ c.justificacion or '-' }}</p>
+  <p><strong>Resumen:</strong> {{ c.resumen or '-' }}</p>
+  <p><strong>Archivo:</strong> {{ c.cv_filename }} — <a href="{{ url_for('candidato_cv', cid=c.id) }}" target="_blank">abrir CV</a></p>
+  <p><strong>Ingreso:</strong> {{ c.fecha_ingreso }} — <strong>Última actualización:</strong> {{ c.fecha_actualizacion }}</p>
+</div>
+
+<form method="post" action="{{ url_for('candidato_actualizar', cid=c.id) }}" class="form-estado">
+  <label>Rol
+    <select name="rol_id">
+      <option value="">(sin rol)</option>
+      {% for r in roles %}
+      <option value="{{ r.id }}" {% if c.rol_id == r.id %}selected{% endif %}>{{ r.nombre }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Estado
+    <select name="estado_id">
+      {% for e in estados %}
+      <option value="{{ e.id }}" {% if c.estado_id == e.id %}selected{% endif %}>{{ e.nombre }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Notas / observaciones (entrevistas, etc.)
+    <textarea name="notas" rows="4" placeholder="Ej: primera entrevista con RRHH, buena comunicación, pidió full remoto...">{{ c.notas or '' }}</textarea>
+  </label>
+  <button type="submit">Guardar</button>
+</form>
+
+{% if c.estado_nombre == 'Efectivo' and tiene_permiso(usuario, 'item_empleados') %}
+<div class="alta-nomina">
+  {% if empleado_vinculado %}
+  <p><a href="{{ url_for('empleado_detalle', eid=empleado_vinculado.id) }}">Ver ficha de empleado</a> (ya dado de alta)</p>
+  {% else %}
+  <a class="btn-principal" href="{{ url_for('empleado_nuevo', desde_candidato=c.id) }}">Dar de alta en Nómina</a>
+  {% endif %}
+</div>
+{% endif %}
+
+<form method="post" action="{{ url_for('candidato_eliminar', cid=c.id) }}" style="margin-top:20px;">
+  <button type="button" onclick="confirmarAccion(this, '¿Eliminar este candidato? Se borra también el CV del disco. No se puede deshacer.')">🗑️ Eliminar candidato</button>
+</form>
+{% endblock %}

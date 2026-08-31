@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block titulo %}Cartelera{% endblock %}
+{% block contenido %}
+<h1>📋 Cartelera de Comunicación</h1>
+<p class="nota">Tareas pendientes del equipo. La barra muestra cuánto tiempo del plazo ya pasó (no cuánto trabajo se hizo) — se pone roja si se venció el plazo sin marcarla como Completada.</p>
+
+<div class="acciones-empleados">
+  <a class="btn-principal" href="{{ url_for('cartelera_nueva') }}">+ Nueva tarea</a>
+</div>
+
+<form method="get" class="filtros">
+  <select name="estado" onchange="this.form.submit()">
+    <option value="">Todos los estados</option>
+    {% for e in estados_tarea %}
+    <option value="{{ e }}" {% if estado_filtro == e %}selected{% endif %}>{{ e }}</option>
+    {% endfor %}
+  </select>
+</form>
+
+<table>
+  <thead>
+    <tr><th>Nombre</th><th>Responsable</th><th>Inicio</th><th>Fin</th><th>Estado</th><th>Cumplimiento</th></tr>
+  </thead>
+  <tbody>
+    {% for t in tareas %}
+    <tr onclick="window.location='{{ url_for('cartelera_detalle', tid=t.id) }}'" class="fila-click">
+      <td>{{ t.nombre }}</td>
+      <td>{{ t.responsable_nombre or '-' }}</td>
+      <td>{{ t.fecha_inicio }}</td>
+      <td>{{ t.fecha_fin or '-' }}</td>
+      <td><span class="badge {{ 'estado-efectivo' if t.estado == 'Completada' else ('estado-desechado' if t.progreso_clase == 'vencida' else 'estado-entrevista') }}">{{ t.estado }}</span></td>
+      <td>
+        <div class="barra-fondo barra-tarea">
+          <div class="barra-relleno barra-{{ t.progreso_clase }}" style="width: {{ t.progreso }}%;"></div>
+        </div>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6">No hay tareas cargadas todavía.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

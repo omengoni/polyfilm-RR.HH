@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block titulo %}{{ tema.nombre }}{% endblock %}
+{% block contenido %}
+<p><a href="{{ url_for('capacitaciones') }}">&larr; Volver a capacitaciones</a></p>
+<h1>🎓 {{ tema.nombre }}</h1>
+
+<form method="post" action="{{ url_for('capacitacion_tema_editar', tid=tema.id) }}" class="form-empleado">
+  <label>Nombre <input type="text" name="nombre" value="{{ tema.nombre }}" required></label>
+  <label>Tema madre
+    <select name="tema_madre">
+      <option value="" {% if not tema.tema_madre %}selected{% endif %}>(sin definir)</option>
+      <option value="Seguridad e Higiene" {% if tema.tema_madre == 'Seguridad e Higiene' %}selected{% endif %}>Seguridad e Higiene</option>
+      <option value="Medicina Laboral" {% if tema.tema_madre == 'Medicina Laboral' %}selected{% endif %}>Medicina Laboral</option>
+      <option value="Medio Ambiente" {% if tema.tema_madre == 'Medio Ambiente' %}selected{% endif %}>Medio Ambiente</option>
+    </select>
+  </label>
+  <label>Tipo
+    <select name="tipo">
+      <option value="Capacitación" {% if tema.tipo == 'Capacitación' %}selected{% endif %}>Capacitación</option>
+      <option value="Inducción" {% if tema.tipo == 'Inducción' %}selected{% endif %}>Inducción</option>
+    </select>
+  </label>
+  <label>Área que dicta <input type="text" name="area_dicta" value="{{ tema.area_dicta or '' }}"></label>
+  <label>Planta <input type="text" name="planta" value="{{ tema.planta or '' }}"></label>
+  <label>Modalidad <input type="text" name="modalidad" value="{{ tema.modalidad or '' }}"></label>
+  <label>Duración <input type="text" name="duracion" value="{{ tema.duracion or '' }}"></label>
+  <label class="check-inline"><input type="checkbox" name="activo" {% if tema.activo %}checked{% endif %}> Activo</label>
+  <button type="submit" class="btn-principal">Guardar</button>
+</form>
+
+<h2>Plan anual {{ anio_actual }}</h2>
+<form method="post" action="{{ url_for('capacitacion_plan_guardar', tid=tema.id) }}" class="form-empleado">
+  <input type="hidden" name="anio" value="{{ anio_actual }}">
+  <fieldset class="modo-carga">
+    <legend>Meses planificados</legend>
+    {% for m in meses %}
+    <label class="check-inline"><input type="checkbox" name="mes_{{ m }}" {% if m in meses_planificados %}checked{% endif %}> {{ m }}</label>
+    {% endfor %}
+  </fieldset>
+  <label>Observaciones <input type="text" name="observaciones" value="{{ observaciones_plan or '' }}"></label>
+  <button type="submit">Guardar plan</button>
+</form>
+
+<h2>Asistencias</h2>
+<div class="acciones-empleados">
+  <a class="btn-principal" href="{{ url_for('capacitacion_nueva', tema_id=tema.id) }}">+ Cargar asistencia</a>
+</div>
+{% if registros %}
+<table>
+  <thead>
+    <tr><th>Fecha</th><th>Nombre</th><th>Departamento</th><th>Puntaje</th><th>Observaciones</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for r in registros %}
+    <tr>
+      <td>{{ r.fecha }}</td>
+      <td>{% if r.empleado_id_real %}<a href="{{ url_for('empleado_detalle', eid=r.empleado_id_real) }}">{{ r.nombre_original }}</a>{% else %}{{ r.nombre_original }} <span class="nota">(sin match)</span>{% endif %}</td>
+      <td>{{ r.departamento_nombre or '-' }}</td>
+      <td>{{ r.puntuacion if r.puntuacion is not none else '-' }}</td>
+      <td>{{ r.observaciones or '-' }}</td>
+      <td>
+        <form method="post" action="{{ url_for('capacitacion_registro_eliminar', rid=r.id) }}">
+          <button type="button" onclick="confirmarAccion(this, '¿Eliminar este registro?')">Eliminar</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="nota">Sin asistencias registradas.</p>
+{% endif %}
+{% endblock %}

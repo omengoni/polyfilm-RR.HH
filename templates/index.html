@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block titulo %}Inicio{% endblock %}
+{% block contenido %}
+<h1>RR.HH. Polyfilm</h1>
+<div class="menu-grid">
+  {% for m in modulos %}
+  <a class="card card-modulo" href="{{ m.href }}" style="border-top: 4px solid {{ m.color }};">
+    <span class="card-icono">{{ m.icono }}</span>
+    <span class="card-titulo">{{ m.nombre }}</span>
+    <span class="card-desc">{{ m.descripcion }}</span>
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}

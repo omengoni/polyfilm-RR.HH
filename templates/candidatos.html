@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block titulo %}Candidatos{% endblock %}
+{% block contenido %}
+<h1>Candidatos</h1>
+
+<form method="get" class="filtros">
+  <input type="hidden" name="orden" value="{{ orden }}">
+  <input type="hidden" name="dir" value="{{ direccion }}">
+  <select name="rol_id" onchange="this.form.submit()">
+    <option value="">Todos los roles</option>
+    {% for r in roles %}
+    <option value="{{ r.id }}" {% if rol_id == r.id %}selected{% endif %}>{{ r.nombre }}</option>
+    {% endfor %}
+  </select>
+  <select name="estado_id" onchange="this.form.submit()">
+    <option value="">Todos los estados</option>
+    {% for e in estados %}
+    <option value="{{ e.id }}" {% if estado_id == e.id %}selected{% endif %}>{{ e.nombre }}</option>
+    {% endfor %}
+  </select>
+  <label class="check-inline">Desde <input type="date" name="desde" value="{{ desde }}" onchange="this.form.submit()"></label>
+  <label class="check-inline">Hasta <input type="date" name="hasta" value="{{ hasta }}" onchange="this.form.submit()"></label>
+  <button type="submit">Filtrar</button>
+</form>
+
+{% macro th(columna, etiqueta) %}
+  {% set nueva_dir = 'asc' if (orden == columna and direccion == 'desc') else 'desc' %}
+  <th>
+    <a href="{{ url_for('candidatos', rol_id=rol_id, estado_id=estado_id, desde=desde, hasta=hasta, orden=columna, dir=nueva_dir) }}">
+      {{ etiqueta }}{% if orden == columna %} {{ '▲' if direccion == 'asc' else '▼' }}{% endif %}
+    </a>
+  </th>
+{% endmacro %}
+
+<div class="acciones-empleados">
+  <label class="check-inline">Marcar los que tengan score menor a
+    <input type="number" id="umbral-score" min="0" max="100" style="width:60px;">
+    <button type="button" onclick="marcarPorScore()">Marcar</button>
+  </label>
+  <button type="button" onclick="desmarcarTodos()">Desmarcar todos</button>
+</div>
+
+<form id="form-candidatos" method="post" action="{{ url_for('candidatos_eliminar_masivo') }}">
+<table>
+  <thead>
+    <tr>
+      <th><input type="checkbox" id="check-todos" onclick="event.stopPropagation(); marcarTodos(this.checked);"></th>
+      <th title="Tener en cuenta">⭐</th>
+      {{ th('nombre', 'Nombre') }}
+      {{ th('localidad', 'Localidad') }}
+      {{ th('rol', 'Rol') }}
+      {{ th('score', 'Score') }}
+      {{ th('estado', 'Estado') }}
+      {{ th('ingreso', 'Ingreso') }}
+    </tr>
+  </thead>
+  <tbody>
+    {% for c in candidatos %}
+    <tr onclick="window.location='{{ url_for('candidato_detalle', cid=c.id) }}'" class="fila-click {{ 'fila-destacada' if c.destacado }}" data-score="{{ c.score if c.score is not none else -1 }}">
+      <td onclick="event.stopPropagation();"><input type="checkbox" name="candidato_id" value="{{ c.id }}" class="check-fila"></td>
+      <td onclick="event.stopPropagation();"><input type="checkbox" {% if c.destacado %}checked{% endif %} onchange="toggleDestacado(this, {{ c.id }})" title="Tener en cuenta"></td>
+      <td>{{ c.nombre or '(sin nombre)' }}</td>
+      <td>{{ c.localidad or '-' }}</td>
+      <td>{{ c.rol_nombre or c.rol_sugerido or '-' }}</td>
+      <td><span class="badge {{ c.score|score_clase }}">{{ c.score if c.score is not none else '-' }}</span></td>
+      <td><span class="badge {{ c.estado_nombre|estado_clase }}">{{ c.estado_nombre }}</span></td>
+      <td>{{ c.fecha_ingreso }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="8">No hay candidatos todavía.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+<div class="acciones-empleados" style="margin-top:12px;">
+  <button type="button" onclick="confirmarAccion(this, '¿Eliminar los candidatos tildados? Se borran también sus CVs del disco. Esta acción no se puede deshacer.')">🗑️ Eliminar seleccionados</button>
+</div>
+</form>
+
+<script>
+function toggleDestacado(checkbox, id) {
+  const marcado = checkbox.checked;
+  fetch(`/candidatos/${id}/destacar`, { method: 'POST' })
+    .then(() => {
+      checkbox.closest('tr').classList.toggle('fila-destacada', marcado);
+    })
+    .catch(() => {
+      checkbox.checked = !marcado;
+      alert('No se pudo guardar. Probá de nuevo.');
+    });
+}
+function marcarTodos(valor) {
+  document.querySelectorAll('.check-fila').forEach(c => c.checked = valor);
+}
+function desmarcarTodos() {
+  marcarTodos(false);
+  document.getElementById('check-todos').checked = false;
+}
+function marcarPorScore() {
+  const umbral = parseFloat(document.getElementById('umbral-score').value);
+  if (isNaN(umbral)) { return; }
+  document.querySelectorAll('tr[data-score]').forEach(fila => {
+    const score = parseFloat(fila.dataset.score);
+    const check = fila.querySelector('.check-fila');
+    if (check && score >= 0 && score < umbral) {
+      check.checked = true;
+    }
+  });
+}
+</script>
+{% endblock %}

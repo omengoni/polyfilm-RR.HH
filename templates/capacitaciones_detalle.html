@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block titulo %}Detalle de capacitaciones{% endblock %}
+{% block contenido %}
+<p><a href="{{ url_for('capacitaciones') }}">&larr; Volver a Capacitaciones</a></p>
+<h1>🎓 Detalle de asistencias y temas</h1>
+
+<h2>Detalle</h2>
+<form method="get" class="filtros">
+  <select name="tema_id" onchange="this.form.submit()">
+    <option value="">Todos los temas</option>
+    {% for t in temas %}
+    <option value="{{ t.id }}" {% if tema_id == t.id %}selected{% endif %}>{{ t.nombre }}</option>
+    {% endfor %}
+  </select>
+  <select name="departamento_id" onchange="this.form.submit()">
+    <option value="">Todos los departamentos</option>
+    {% for d in departamentos %}
+    <option value="{{ d.id }}" {% if departamento_id == d.id %}selected{% endif %}>{{ d.nombre }}</option>
+    {% endfor %}
+  </select>
+</form>
+
+<table>
+  <thead>
+    <tr><th>Fecha</th><th>Nombre</th><th>Departamento</th><th>Tema</th><th>Puntaje</th></tr>
+  </thead>
+  <tbody>
+    {% for r in registros %}
+    <tr {% if r.empleado_id_real %}onclick="window.location='{{ url_for('empleado_detalle', eid=r.empleado_id_real) }}'" class="fila-click"{% endif %}>
+      <td>{{ r.fecha }}</td>
+      <td>{{ r.nombre_original }}{% if not r.empleado_id_real %} <span class="nota">(sin match)</span>{% endif %}</td>
+      <td>{{ r.departamento_nombre or '-' }}</td>
+      <td>{{ r.tema_nombre }}</td>
+      <td>{{ r.puntuacion if r.puntuacion is not none else '-' }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5">No hay registros que coincidan.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h2>Temas de capacitación</h2>
+<table>
+  <thead><tr><th>Nombre</th><th>Tema madre</th><th>Tipo</th><th>Planta</th><th>Modalidad</th><th></th></tr></thead>
+  <tbody>
+    {% for t in temas %}
+    <tr class="fila-click" onclick="window.location='{{ url_for('capacitacion_tema_detalle', tid=t.id) }}'">
+      <td>{{ t.nombre }}</td>
+      <td>{{ t.tema_madre or '-' }}</td>
+      <td>{{ t.tipo }}</td>
+      <td>{{ t.planta or '-' }}</td>
+      <td>{{ t.modalidad or '-' }}</td>
+      <td><a href="{{ url_for('capacitacion_tema_detalle', tid=t.id) }}">Ver</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<form method="post" action="{{ url_for('capacitaciones_tema_nuevo') }}" class="form-nuevo-usuario">
+  <label>Nombre <input type="text" name="nombre" required></label>
+  <label>Tema madre
+    <select name="tema_madre">
+      <option value="">(sin definir)</option>
+      <option value="Seguridad e Higiene">Seguridad e Higiene</option>
+      <option value="Medicina Laboral">Medicina Laboral</option>
+      <option value="Medio Ambiente">Medio Ambiente</option>
+    </select>
+  </label>
+  <label>Tipo
+    <select name="tipo">
+      <option value="Capacitación">Capacitación</option>
+      <option value="Inducción">Inducción</option>
+    </select>
+  </label>
+  <label>Área que dicta <input type="text" name="area_dicta"></label>
+  <label>Planta <input type="text" name="planta" placeholder="Polyfilm / Polyseed"></label>
+  <label>Modalidad <input type="text" name="modalidad" placeholder="Presencial / Virtual"></label>
+  <label>Duración <input type="text" name="duracion" placeholder="ej: 60 minutos"></label>
+  <button type="submit">Crear tema</button>
+</form>
+{% endblock %}

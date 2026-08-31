@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block titulo %}Reclutamiento{% endblock %}
+{% block contenido %}
+<h1>🧑‍💼 Reclutamiento</h1>
+{% set modulo = modulos | selectattr('cod', 'equalto', 'reclutamiento') | first %}
+<div class="menu-grid">
+  {% if modulo %}
+  {% for op in modulo.opciones %}
+  <a class="card" href="{{ op.href }}">
+    <span class="card-titulo">{{ op.label }}</span>
+  </a>
+  {% endfor %}
+  {% else %}
+  <p>No tenés acceso a ninguna pantalla de este módulo todavía.</p>
+  {% endif %}
+</div>
+{% endblock %}

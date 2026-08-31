@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block titulo %}Empleados{% endblock %}
+{% block contenido %}
+<h1>🪪 Empleados</h1>
+
+<div class="acciones-empleados">
+  <a class="btn-principal" href="{{ url_for('empleado_nuevo') }}">+ Nuevo empleado</a>
+  <form method="post" action="{{ url_for('empleados_importar') }}" style="display:inline;">
+    <button type="submit">Reimportar desde Excel</button>
+  </form>
+</div>
+
+<form method="get" class="filtros">
+  <input type="text" name="buscar" value="{{ buscar }}" placeholder="Nombre, DNI, CUIL o legajo...">
+  <select name="departamento_id" onchange="this.form.submit()">
+    <option value="">Todos los departamentos</option>
+    {% for d in departamentos %}
+    <option value="{{ d.id }}" {% if departamento_id == d.id %}selected{% endif %}>{{ d.nombre }}</option>
+    {% endfor %}
+  </select>
+  <select name="puesto_id" onchange="this.form.submit()">
+    <option value="">Todos los puestos</option>
+    {% for p in puestos %}
+    <option value="{{ p.id }}" {% if puesto_id == p.id %}selected{% endif %}>{{ p.nombre }}</option>
+    {% endfor %}
+  </select>
+  <select name="sede_id" onchange="this.form.submit()">
+    <option value="">Todas las sedes</option>
+    {% for s in sedes %}
+    <option value="{{ s.id }}" {% if sede_id == s.id %}selected{% endif %}>{{ s.nombre }}</option>
+    {% endfor %}
+  </select>
+  <select name="tipo_contrato" onchange="this.form.submit()">
+    <option value="">Todos los tipos de contrato</option>
+    <option value="Mensualizado" {% if tipo_contrato == 'Mensualizado' %}selected{% endif %}>Mensualizado</option>
+    <option value="Jornalizado" {% if tipo_contrato == 'Jornalizado' %}selected{% endif %}>Jornalizado</option>
+  </select>
+  <label class="check-inline"><input type="checkbox" name="activos" value="1" {% if solo_activos %}checked{% endif %} onchange="this.form.submit()"> Solo activos</label>
+  <button type="submit">Buscar</button>
+</form>
+
+<table>
+  <thead>
+    <tr><th>Nombre</th><th>Legajo</th><th>Departamento</th><th>Puesto</th><th>Sede</th><th>Tipo de contrato</th><th>Compañía</th><th>Estado</th></tr>
+  </thead>
+  <tbody>
+    {% for e in empleados %}
+    <tr onclick="window.location='{{ url_for('empleado_detalle', eid=e.id) }}'" class="fila-click">
+      <td>{{ e.nombre }}</td>
+      <td>{{ e.legajo }}</td>
+      <td>{{ e.departamento_nombre or '-' }}</td>
+      <td>{{ e.puesto_nombre or '-' }}</td>
+      <td>{{ e.sede_nombre or '-' }}</td>
+      <td>{{ e.tipo_contrato or '-' }}</td>
+      <td>{{ e.compania_nombre or '-' }}</td>
+      <td><span class="badge {{ 'estado-efectivo' if e.activo else 'estado-desechado' }}">{{ 'Activo' if e.activo else 'Baja' }}</span></td>
+    </tr>
+    {% else %}
+    <tr><td colspan="8">No hay empleados que coincidan.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block titulo %}Sanciones{% endblock %}
+{% block contenido %}
+<h1>⚠️ Apercibimientos y Suspensiones</h1>
+
+<div class="acciones-empleados">
+  <a class="btn-principal" href="{{ url_for('sanciones_nueva') }}">+ Cargar sanción</a>
+  <form method="post" action="{{ url_for('sanciones_importar') }}">
+    <button type="submit">Reimportar desde Excel</button>
+  </form>
+</div>
+
+<h2>Por departamento</h2>
+<div class="dashboard-sanciones">
+  {% for f in dashboard %}
+  <div class="fila-dashboard">
+    <span class="label-depto">{{ f.departamento_nombre }}</span>
+    <div class="barra-fondo">
+      <div class="barra-relleno" style="width: {{ (f.total / max_total * 100) | round(1) }}%;"></div>
+    </div>
+    <span class="total-depto">{{ f.total }} ({{ f.apercibimientos }} aperc. / {{ f.suspensiones }} susp.)</span>
+  </div>
+  {% else %}
+  <p>No hay sanciones cargadas todavía.</p>
+  {% endfor %}
+</div>
+
+<h2>Por motivo</h2>
+<div class="dashboard-sanciones">
+  {% for f in dashboard_motivo %}
+  <div class="fila-dashboard">
+    <span class="label-depto">{{ f.motivo }}</span>
+    <div class="barra-fondo">
+      <div class="barra-relleno" style="width: {{ (f.total / max_total_motivo * 100) | round(1) }}%;"></div>
+    </div>
+    <span class="total-depto">{{ f.total }}</span>
+  </div>
+  {% else %}
+  <p>No hay sanciones cargadas todavía.</p>
+  {% endfor %}
+</div>
+
+<h2>Detalle</h2>
+<form method="get" class="filtros">
+  <select name="tipo" onchange="this.form.submit()">
+    <option value="">Todos los tipos</option>
+    {% for t in tipos %}
+    <option value="{{ t.nombre }}" {% if tipo == t.nombre %}selected{% endif %}>{{ t.nombre }}</option>
+    {% endfor %}
+  </select>
+  <select name="departamento_id" onchange="this.form.submit()">
+    <option value="">Todos los departamentos</option>
+    {% for d in departamentos %}
+    <option value="{{ d.id }}" {% if departamento_id == d.id %}selected{% endif %}>{{ d.nombre }}</option>
+    {% endfor %}
+  </select>
+</form>
+
+<table>
+  <thead>
+    <tr><th>Fecha</th><th>Nombre</th><th>Departamento</th><th>Tipo</th><th>Motivo</th><th>Días susp.</th><th>Desde</th></tr>
+  </thead>
+  <tbody>
+    {% for s in sanciones %}
+    <tr {% if s.empleado_id_real %}onclick="window.location='{{ url_for('empleado_detalle', eid=s.empleado_id_real) }}'" class="fila-click"{% endif %}>
+      <td>{{ s.fecha_registro }}</td>
+      <td>{{ s.nombre_original }}{% if not s.empleado_id_real %} <span class="nota">(sin match)</span>{% endif %}</td>
+      <td>{{ s.departamento_nombre or '-' }}</td>
+      <td><span class="badge {{ 'estado-desechado' if s.tipo == 'Suspensión' else 'estado-preocupacional' }}">{{ s.tipo }}</span></td>
+      <td>{{ s.motivo or '-' }}</td>
+      <td>{{ s.dias_suspension or '-' }}</td>
+      <td>{{ s.fecha_desde or '-' }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="7">No hay registros que coincidan.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="catalogos-sancion">
+  <div>
+    <h2>Tipos de sanción</h2>
+    <table>
+      <thead><tr><th>Nombre</th><th>Activo</th><th></th></tr></thead>
+      <tbody>
+        {% for t in tipos %}
+        <tr>
+          <form method="post" action="{{ url_for('tipos_sancion_editar', tid=t.id) }}">
+            <td><input type="text" name="nombre" value="{{ t.nombre }}" required></td>
+            <td><input type="checkbox" name="activo" {% if t.activo %}checked{% endif %}></td>
+            <td><button type="submit">Guardar</button></td>
+          </form>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <form method="post" action="{{ url_for('tipos_sancion_nuevo') }}" class="form-nuevo-rol">
+      <input type="text" name="nombre" placeholder="Nuevo tipo" required>
+      <button type="submit">Crear</button>
+    </form>
+  </div>
+
+  <div>
+    <h2>Motivos de sanción</h2>
+    <table>
+      <thead><tr><th>Nombre</th><th>Activo</th><th></th></tr></thead>
+      <tbody>
+        {% for m in motivos %}
+        <tr>
+          <form method="post" action="{{ url_for('motivos_sancion_editar', mid=m.id) }}">
+            <td><input type="text" name="nombre" value="{{ m.nombre }}" required></td>
+            <td><input type="checkbox" name="activo" {% if m.activo %}checked{% endif %}></td>
+            <td><button type="submit">Guardar</button></td>
+          </form>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <form method="post" action="{{ url_for('motivos_sancion_nuevo') }}" class="form-nuevo-rol">
+      <input type="text" name="nombre" placeholder="Nuevo motivo" required>
+      <button type="submit">Crear</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

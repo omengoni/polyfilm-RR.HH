@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block titulo %}Preguntar a los documentos{% endblock %}
+{% block contenido %}
+<p><a href="{{ url_for('documentos') }}">&larr; Volver a documentos</a></p>
+<h1>💬 Preguntar a los documentos</h1>
+{% if not voyage_ok %}
+<p class="nota">Falta configurar la API key de Voyage AI en <code>rrhh.cfg</code> para poder buscar en los documentos.</p>
+{% endif %}
+
+<form method="post" class="form-pregunta">
+  <select name="categoria">
+    <option value="">Todas las categorías</option>
+    {% for c in categorias %}
+    <option value="{{ c }}" {% if categoria == c %}selected{% endif %}>{{ c }}</option>
+    {% endfor %}
+  </select>
+  <textarea name="pregunta" rows="3" placeholder="Ej: ¿Cómo se hace una inducción de un empleado de logística?" required>{{ pregunta }}</textarea>
+  <button type="submit" class="btn-principal" {% if not voyage_ok %}disabled{% endif %}>Preguntar</button>
+</form>
+
+{% if respuesta %}
+<div class="respuesta-ia">
+  <h2>Respuesta</h2>
+  <p>{{ respuesta }}</p>
+  {% if fuentes %}
+  <p class="nota"><strong>Fuentes:</strong>
+    {% for f in fuentes %}
+    <a href="{{ url_for('documentos_archivo', did=f.documento_id) }}" target="_blank">{{ f.titulo }}</a>{% if not loop.last %}, {% endif %}
+    {% endfor %}
+  </p>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

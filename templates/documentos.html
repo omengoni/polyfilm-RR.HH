@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block titulo %}Documentos{% endblock %}
+{% block contenido %}
+<h1>📚 Documentos</h1>
+{% if not voyage_ok %}
+<p class="nota">Falta configurar la API key de Voyage AI en <code>rrhh.cfg</code> (<code>voyage_api_key</code>) para poder subir y consultar documentos — es el servicio que convierte el texto en vectores para poder buscarlo.</p>
+{% endif %}
+
+<div class="acciones-empleados">
+  <a class="btn-principal" href="{{ url_for('documentos_preguntar') }}">💬 Preguntarle a los documentos</a>
+</div>
+
+<form method="get" class="filtros">
+  <select name="categoria" onchange="this.form.submit()">
+    <option value="">Todas las categorías</option>
+    {% for c in categorias %}
+    <option value="{{ c }}" {% if categoria == c %}selected{% endif %}>{{ c }}</option>
+    {% endfor %}
+  </select>
+</form>
+
+<table>
+  <thead>
+    <tr><th>Título</th><th>Categoría</th><th>Archivo</th><th>Cargado</th><th>Activo</th></tr>
+  </thead>
+  <tbody>
+    {% for d in documentos %}
+    <tr>
+      <td>{{ d.titulo }}</td>
+      <td>{{ d.categoria or '-' }}</td>
+      <td><a href="{{ url_for('documentos_archivo', did=d.id) }}" target="_blank">{{ d.archivo_filename }}</a></td>
+      <td>{{ d.fecha_carga }}</td>
+      <td>
+        <form method="post" action="{{ url_for('documentos_desactivar', did=d.id) }}">
+          <input type="checkbox" name="activo" onchange="this.form.submit()" {% if d.activo %}checked{% endif %}>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5">No hay documentos cargados todavía.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h2>Subir documento</h2>
+<form method="post" action="{{ url_for('documentos_subir') }}" enctype="multipart/form-data" class="form-nuevo-usuario">
+  <label>Título <input type="text" name="titulo" placeholder="(opcional, usa el nombre del archivo si se deja vacío)"></label>
+  <label>Categoría
+    <select name="categoria">
+      <option value="">(sin categoría)</option>
+      {% for c in categorias %}
+      <option value="{{ c }}">{{ c }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Archivo (PDF, DOCX o TXT) <input type="file" name="archivo" accept=".pdf,.docx,.txt" required></label>
+  <button type="submit" {% if not voyage_ok %}disabled{% endif %}>Subir y procesar</button>
+</form>
+{% endblock %}

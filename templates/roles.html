@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block titulo %}Roles{% endblock %}
+{% block contenido %}
+<h1>Catálogo de roles</h1>
+
+<table>
+  <thead>
+    <tr><th>Rol</th><th>Descripción / palabras clave</th><th>Activo</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for r in roles %}
+    <tr>
+      <form method="post" action="{{ url_for('roles_editar', rid=r.id) }}">
+        <td><input type="text" name="nombre" value="{{ r.nombre }}" required></td>
+        <td><textarea name="descripcion" rows="2">{{ r.descripcion or '' }}</textarea></td>
+        <td><input type="checkbox" name="activo" {% if r.activo %}checked{% endif %}></td>
+        <td><button type="submit">Guardar</button></td>
+      </form>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h2>Agregar rol</h2>
+<form method="post" action="{{ url_for('roles_nuevo') }}" class="form-nuevo-rol">
+  <input type="text" name="nombre" placeholder="Nombre del rol" required>
+  <textarea name="descripcion" placeholder="Descripción / palabras clave" rows="2"></textarea>
+  <button type="submit">Crear</button>
+</form>
+{% endblock %}

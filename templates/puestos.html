@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block titulo %}Puestos{% endblock %}
+{% block contenido %}
+<h1>🧰 Puestos</h1>
+<p class="nota">Catálogo de puestos, cargado desde la nómina. Editable acá.</p>
+
+<table>
+  <thead>
+    <tr><th>Puesto</th><th>Activo</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for p in puestos %}
+    <tr>
+      <form method="post" action="{{ url_for('puestos_editar', pid=p.id) }}">
+        <td><input type="text" name="nombre" value="{{ p.nombre }}" required></td>
+        <td><input type="checkbox" name="activo" {% if p.activo %}checked{% endif %}></td>
+        <td><button type="submit">Guardar</button></td>
+      </form>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block titulo %}Seguridad e Higiene{% endblock %}
+{% block contenido %}
+<h1>🦺 Seguridad e Higiene</h1>
+<p class="nota">Cronograma de estudios por sede, sincronizado desde el sheet de la consultora. El vencimiento se calcula como última fecha realizada + frecuencia.</p>
+
+{% if not syh_configurado %}
+<p class="nota">Falta configurar 'syh_sheet_id' en rrhh.cfg.</p>
+{% endif %}
+
+<div class="acciones-empleados">
+  <form method="post" action="{{ url_for('syh_sincronizar') }}">
+    <button type="submit" class="btn-principal">Sincronizar ahora</button>
+  </form>
+</div>
+
+<form method="get" class="filtros">
+  <select name="sede" onchange="this.form.submit()">
+    <option value="">Todas las sedes</option>
+    {% for s in sedes %}
+    <option value="{{ s }}" {% if sede_filtro == s %}selected{% endif %}>{{ s }}</option>
+    {% endfor %}
+  </select>
+</form>
+
+<table>
+  <thead>
+    <tr><th>Sede</th><th>Estudio</th><th>Frecuencia</th><th>Último realizado</th><th>Próximo vencimiento</th><th>Estado</th></tr>
+  </thead>
+  <tbody>
+    {% for e in estudios %}
+    <tr onclick="window.location='{{ url_for('syh_estudio_detalle', said=e.id) }}'" class="fila-click">
+      <td>{{ e.sede }}</td>
+      <td>{{ e.nombre }}</td>
+      <td>{{ e.frecuencia or '-' }}</td>
+      <td>{{ e.ultima_fecha_realizado or '-' }}</td>
+      <td>{{ e.proximo_vencimiento or '-' }}</td>
+      <td><span class="badge {{ e.clase_vencimiento }}">{{ e.etiqueta_vencimiento }}</span></td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6">Todavía no hay estudios sincronizados.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

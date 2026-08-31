@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>RR.HH. Polyfilm - Ingresar</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="login-body">
+<div class="login-box">
+  <h1>RR.HH. Polyfilm</h1>
+  {% with mensajes = get_flashed_messages(with_categories=true) %}
+    {% if mensajes %}
+      <div class="flashes">
+        {% for categoria, msg in mensajes %}
+          <div class="flash flash-{{ categoria }}">{{ msg }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+  <form method="post">
+    <input type="hidden" name="next" value="{{ next }}">
+    <label>Usuario
+      <input type="text" name="usuario" required autofocus>
+    </label>
+    <label>Contraseña
+      <input type="password" name="password" required>
+    </label>
+    <button type="submit" class="btn-principal">Ingresar</button>
+  </form>
+  <p class="nota"><a href="{{ url_for('olvide_password') }}">¿Olvidaste tu contraseña?</a></p>
+</div>
+</body>
+</html>

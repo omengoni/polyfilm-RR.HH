@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block titulo %}Usuarios{% endblock %}
+{% block contenido %}
+<h1>⚙️ Usuarios</h1>
+{% if not smtp_ok %}
+<p class="nota">El envío de mail para "olvidé mi contraseña" todavía no está configurado (rrhh.cfg). Mientras tanto, reseteala vos desde la ficha de cada usuario.</p>
+{% endif %}
+
+<table>
+  <thead>
+    <tr><th>Nombre</th><th>Usuario</th><th>Email</th><th>Admin</th><th>Activo</th><th>Permisos</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for u in usuarios %}
+    <tr onclick="window.location='{{ url_for('admin_usuarios_editar', uid=u.id) }}'" class="fila-click">
+      <td>{{ u.nombre }}</td>
+      <td>{{ u.usuario }}</td>
+      <td>{{ u.email or '-' }}</td>
+      <td>{{ 'Sí' if u.es_admin else 'No' }}</td>
+      <td>{{ 'Sí' if u.activo else 'No' }}</td>
+      <td>{{ 'Todos (admin)' if u.es_admin else cant_permisos.get(u.id, 0) }}</td>
+      <td><a href="{{ url_for('admin_usuarios_editar', uid=u.id) }}">Editar</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% macro checkboxes(marcados) %}
+  {% set items_por_modulo = {} %}
+  {% for it in items %}
+    {% if it.modulo not in items_por_modulo %}{% set _ = items_por_modulo.update({it.modulo: []}) %}{% endif %}
+    {% set _ = items_por_modulo[it.modulo].append(it) %}
+  {% endfor %}
+  <div class="permisos-grid">
+    {% for modulo_nombre, opciones in items_por_modulo.items() %}
+      <div class="permisos-modulo">{{ modulo_nombre }}</div>
+      <div></div>
+      {% for it in opciones %}
+      <label>
+        <input type="checkbox" name="permiso_{{ it.cod }}" {% if it.cod in marcados %}checked{% endif %}>
+        {{ it.label }}
+      </label>
+      {% endfor %}
+    {% endfor %}
+  </div>
+{% endmacro %}
+
+<h2>Crear usuario</h2>
+<form method="post" action="{{ url_for('admin_usuarios_nuevo') }}" class="form-nuevo-usuario" id="form-nuevo-usuario">
+  <label>Nombre <input type="text" name="nombre" required></label>
+  <label>Usuario (login) <input type="text" name="usuario" required></label>
+  <label>Email (para recuperar contraseña) <input type="email" name="email"></label>
+  <label>Contraseña inicial <input type="password" name="password" required></label>
+  <label class="check-inline"><input type="checkbox" name="es_admin" id="nuevo-es-admin" onchange="togglePermisos('nuevo')"> Administrador</label>
+  <label class="check-inline"><input type="checkbox" name="forzar_cambio" checked> Forzar a elegir contraseña propia al entrar</label>
+  <div id="nuevo-permisos">
+    {{ checkboxes([]) }}
+  </div>
+  <p class="nota" id="nuevo-nota-admin" style="display:none;">Un administrador tiene acceso a todo — no hace falta tildar permisos.</p>
+  <button type="submit">Crear</button>
+</form>
+
+<script>
+function togglePermisos(prefijo) {
+  const esAdmin = document.getElementById(prefijo + '-es-admin').checked;
+  document.getElementById(prefijo + '-permisos').style.display = esAdmin ? 'none' : 'block';
+  document.getElementById(prefijo + '-nota-admin').style.display = esAdmin ? 'block' : 'none';
+}
+</script>
+{% endblock %}

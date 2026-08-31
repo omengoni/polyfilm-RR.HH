@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block titulo %}{{ t.nombre }}{% endblock %}
+{% block contenido %}
+<p><a href="{{ url_for('cartelera') }}">&larr; Volver a la cartelera</a></p>
+<h1>📋 {{ t.nombre }}</h1>
+
+<div class="ficha">
+  <p><strong>Cumplimiento del plazo:</strong></p>
+  <div class="barra-fondo barra-tarea">
+    <div class="barra-relleno barra-{{ t.progreso_clase }}" style="width: {{ t.progreso }}%;"></div>
+  </div>
+  <p class="nota">{{ t.progreso }}% del plazo transcurrido{% if t.progreso_clase == 'vencida' %} — <strong>vencida</strong>{% endif %}</p>
+</div>
+
+<form method="post" action="{{ url_for('cartelera_actualizar', tid=t.id) }}" class="form-empleado">
+  <label>Nombre <input type="text" name="nombre" value="{{ t.nombre }}" required></label>
+  <label>Responsable
+    <select name="responsable_id">
+      <option value="">(sin asignar)</option>
+      {% for u in usuarios %}
+      <option value="{{ u.id }}" {% if t.responsable_id == u.id %}selected{% endif %}>{{ u.nombre }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Fecha de inicio <input type="date" name="fecha_inicio" value="{{ t.fecha_inicio }}" required></label>
+  <label>Fecha de fin (opcional) <input type="date" name="fecha_fin" value="{{ t.fecha_fin or '' }}"></label>
+  <label>Estado
+    <select name="estado">
+      {% for e in estados_tarea %}
+      <option value="{{ e }}" {% if t.estado == e %}selected{% endif %}>{{ e }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <button type="submit" class="btn-principal">Guardar</button>
+</form>
+
+<form method="post" action="{{ url_for('cartelera_eliminar', tid=t.id) }}" style="margin-top:12px;">
+  <button type="button" onclick="confirmarAccion(this, '¿Eliminar esta tarea? No se puede deshacer.')">🗑️ Eliminar tarea</button>
+</form>
+
+<h2>Actividad</h2>
+<form method="post" action="{{ url_for('cartelera_actividad_nueva', tid=t.id) }}" class="form-pregunta">
+  <textarea name="comentario" rows="2" placeholder="Contá cómo va esta tarea..." required></textarea>
+  <button type="submit">Agregar actualización</button>
+</form>
+
+<div class="lista-actividad">
+  {% for a in actividad %}
+  <div class="item-actividad">
+    <span class="item-actividad-meta">{{ a.usuario_nombre or 'Sistema' }} — {{ a.fecha }}</span>
+    <p>{{ a.comentario }}</p>
+  </div>
+  {% else %}
+  <p class="nota">Todavía no hay actualizaciones.</p>
+  {% endfor %}
+</div>
+{% endblock %}
